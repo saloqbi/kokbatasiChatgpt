@@ -55,15 +55,18 @@
     svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
     if (!cfg.visible) return;
 
+    // Measurements derived directly from the 1249×1249 reference image.
+    // Reference radii: center hole 106 px, 10 rings ≈42.4 px each,
+    // numeric edge 530 px, angle edge 563 px, calendar edge 589 px.
     const cx = 900;
     const cy = 900;
-    const innerRadius = 190;
-    const ringWidth = 58;
+    const innerRadius = 153;
+    const ringWidth = 61;
     const outerRadius = innerRadius + cfg.levels * ringWidth;
-    const protractorInner = outerRadius + 16;
-    const protractorOuter = protractorInner + 64;
-    const calendarInner = protractorOuter + 12;
-    const calendarOuter = calendarInner + 56;
+    const protractorInner = outerRadius + 7;
+    const protractorOuter = protractorInner + 42;
+    const calendarInner = protractorOuter + 5;
+    const calendarOuter = calendarInner + 33;
     const direction = cfg.clockwise ? 1 : -1;
     const step = 360 / cfg.divisions;
     const halfStep = step / 2;
@@ -71,16 +74,17 @@
     const root = svgEl("g");
     svg.appendChild(root);
 
-    // Alternating ring backgrounds matching the reference.
+    // Alternating bands copied from the reference palette.
     for (let ring = 0; ring < cfg.levels; ring++) {
       const r0 = innerRadius + ring * ringWidth;
       const r1 = r0 + ringWidth;
       const fill = cfg.fill === "levels"
-        ? (ring % 2 === 0 ? "#d8dad5" : "#fbfbf9")
+        ? (ring % 2 === 0 ? "#d9dbd6" : "#ffffff")
         : "#ffffff";
 
       root.appendChild(svgEl("circle", {
-        cx, cy,
+        cx,
+        cy,
         r: (r0 + r1) / 2,
         fill: "none",
         stroke: fill,
@@ -88,26 +92,25 @@
       }));
     }
 
-    // Cell separators are shifted by half a division so every line falls BETWEEN numbers.
+    // Every separator falls between adjacent numbers.
     for (let d = 0; d < cfg.divisions; d++) {
       const angle = direction * (d * step + halfStep);
       const a = polar(cx, cy, innerRadius, angle);
       const b = polar(cx, cy, outerRadius, angle);
-      const major = d % 9 === 0;
       root.appendChild(svgEl("line", {
         x1: a.x,
         y1: a.y,
         x2: b.x,
         y2: b.y,
-        stroke: major ? "#9ea39e" : "#b2b6b1",
-        "stroke-width": major ? 1.45 : 1.08,
-        "stroke-opacity": major ? 0.88 : 0.76,
+        stroke: "#b7bab5",
+        "stroke-width": 1,
+        "stroke-opacity": 0.82,
         "shape-rendering": "geometricPrecision",
         "vector-effect": "non-scaling-stroke",
       }));
     }
 
-    // Circular cell boundaries.
+    // Equal circular boundaries for all ten rings.
     for (let ring = 0; ring <= cfg.levels; ring++) {
       const edge = ring === 0 || ring === cfg.levels;
       root.appendChild(svgEl("circle", {
@@ -115,15 +118,14 @@
         cy,
         r: innerRadius + ring * ringWidth,
         fill: "none",
-        stroke: edge ? "#a2a6a1" : "#b7bab5",
-        "stroke-width": edge ? 1.45 : 1.02,
-        "stroke-opacity": edge ? 0.9 : 0.78,
+        stroke: edge ? "#aeb2ad" : "#b9bcb7",
+        "stroke-width": edge ? 1.25 : 0.95,
+        "stroke-opacity": edge ? 0.92 : 0.82,
         "shape-rendering": "geometricPrecision",
         "vector-effect": "non-scaling-stroke",
       }));
     }
 
-    // Values are centered on their rays: 36 at 0°, 9 at 90°, 18 at 180°, 27 at 270°.
     if (cfg.showNumbers) {
       for (let ring = 0; ring < cfg.levels; ring++) {
         const textRadius = innerRadius + ring * ringWidth + ringWidth / 2;
@@ -133,52 +135,54 @@
           const localAngle = direction * ((local % cfg.divisions) * step);
           const pos = polar(cx, cy, textRadius, localAngle);
           const rotation = readableRotation(localAngle);
-          const fontSize = Math.max(13, Math.min(18, ringWidth * 0.285));
 
           root.appendChild(svgEl("text", {
             x: pos.x,
             y: pos.y,
             class: "wheel-number",
-            "font-size": fontSize,
+            "font-size": 14,
             transform: `rotate(${rotation} ${pos.x} ${pos.y})`,
           }, String(value)));
         }
       }
     }
 
-    // Red protractor frame and five-degree scale.
     if (cfg.showProtractor) {
       root.appendChild(svgEl("circle", {
-        cx, cy, r: protractorInner,
+        cx,
+        cy,
+        r: protractorInner,
         fill: "none",
-        stroke: "#d8a9a5",
-        "stroke-width": 1.25,
+        stroke: "#dcc0bc",
+        "stroke-width": 1.05,
         "vector-effect": "non-scaling-stroke",
       }));
       root.appendChild(svgEl("circle", {
-        cx, cy, r: protractorOuter,
+        cx,
+        cy,
+        r: protractorOuter,
         fill: "none",
-        stroke: "#d96c67",
-        "stroke-width": 1.65,
+        stroke: "#d9a9a5",
+        "stroke-width": 1.2,
         "vector-effect": "non-scaling-stroke",
       }));
 
       for (let angle = 0; angle < 360; angle += 5) {
         const major = angle % 10 === 0;
         const drawAngle = cfg.protractorClockwise ? angle : -angle;
-        const tickStart = polar(cx, cy, protractorOuter - (major ? 20 : 11), drawAngle);
+        const tickStart = polar(cx, cy, protractorOuter - (major ? 17 : 9), drawAngle);
         const tickEnd = polar(cx, cy, protractorOuter, drawAngle);
         root.appendChild(svgEl("line", {
           x1: tickStart.x,
           y1: tickStart.y,
           x2: tickEnd.x,
           y2: tickEnd.y,
-          stroke: major ? "#d9544f" : "#aaa9a5",
-          "stroke-width": major ? 2.25 : 0.9,
+          stroke: major ? "#d95650" : "#aaa9a5",
+          "stroke-width": major ? 1.85 : 0.8,
           "vector-effect": "non-scaling-stroke",
         }));
 
-        const labelR = protractorInner + (major ? 23 : 19);
+        const labelR = protractorInner + 20;
         const p = polar(cx, cy, labelR, drawAngle);
         root.appendChild(svgEl("text", {
           x: p.x,
@@ -189,41 +193,57 @@
       }
 
       const markerAngle = Number(cfg.markerAngle) || 0;
-      const tip = polar(cx, cy, calendarInner + 11, markerAngle);
-      const left = polar(cx, cy, calendarInner - 6, markerAngle - 2);
-      const right = polar(cx, cy, calendarInner - 6, markerAngle + 2);
+      const tip = polar(cx, cy, calendarInner + 7, markerAngle);
+      const left = polar(cx, cy, calendarInner - 6, markerAngle - 1.7);
+      const right = polar(cx, cy, calendarInner - 6, markerAngle + 1.7);
       root.appendChild(svgEl("path", {
         d: `M ${tip.x} ${tip.y} L ${left.x} ${left.y} L ${right.x} ${right.y} Z`,
-        fill: "#d71f1f",
+        fill: "#d9211f",
       }));
     }
 
-    // Green calendar guide plus alternating red/green dashed outermost frame.
     if (cfg.showCalendar) {
+      // Pale green guide as in the source application.
       root.appendChild(svgEl("circle", {
-        cx, cy, r: calendarInner,
+        cx,
+        cy,
+        r: calendarInner,
         fill: "none",
-        stroke: "#a9c5b6",
-        "stroke-width": 1.45,
+        stroke: "#b8cfc2",
+        "stroke-width": 1.15,
         "vector-effect": "non-scaling-stroke",
       }));
 
+      // Continuous green frame plus subtle alternating red/green marks.
       root.appendChild(svgEl("circle", {
-        cx, cy, r: calendarOuter,
+        cx,
+        cy,
+        r: calendarOuter,
         fill: "none",
-        stroke: "#d93631",
-        "stroke-width": 2,
-        "stroke-dasharray": "18 18",
+        stroke: "#b6cfc0",
+        "stroke-width": 1.15,
+        "vector-effect": "non-scaling-stroke",
+      }));
+      root.appendChild(svgEl("circle", {
+        cx,
+        cy,
+        r: calendarOuter,
+        fill: "none",
+        stroke: "#d94a43",
+        "stroke-width": 1.15,
+        "stroke-dasharray": "14 14",
         "stroke-linecap": "butt",
         "vector-effect": "non-scaling-stroke",
       }));
       root.appendChild(svgEl("circle", {
-        cx, cy, r: calendarOuter,
+        cx,
+        cy,
+        r: calendarOuter,
         fill: "none",
-        stroke: "#2d9a55",
-        "stroke-width": 2,
-        "stroke-dasharray": "18 18",
-        "stroke-dashoffset": "18",
+        stroke: "#3c9b60",
+        "stroke-width": 1.15,
+        "stroke-dasharray": "14 14",
+        "stroke-dashoffset": "14",
         "stroke-linecap": "butt",
         "vector-effect": "non-scaling-stroke",
       }));
@@ -231,19 +251,19 @@
       for (const [angle, label] of CALENDAR_MARKS) {
         const drawAngle = cfg.calendarClockwise ? angle : -angle;
         const tick0 = polar(cx, cy, calendarInner, drawAngle);
-        const tick1 = polar(cx, cy, calendarOuter - 8, drawAngle);
+        const tick1 = polar(cx, cy, calendarOuter - 4, drawAngle);
         const major = angle % 30 === 0;
         root.appendChild(svgEl("line", {
           x1: tick0.x,
           y1: tick0.y,
           x2: tick1.x,
           y2: tick1.y,
-          stroke: major ? "#299254" : "#79ad90",
-          "stroke-width": major ? 2 : 1.25,
+          stroke: major ? "#38965d" : "#86b19a",
+          "stroke-width": major ? 1.7 : 1,
           "vector-effect": "non-scaling-stroke",
         }));
 
-        const p = polar(cx, cy, calendarOuter - 5, drawAngle);
+        const p = polar(cx, cy, calendarOuter + 9, drawAngle);
         root.appendChild(svgEl("text", {
           x: p.x,
           y: p.y,
@@ -258,8 +278,8 @@
       cy,
       r: innerRadius - 1,
       fill: "#ffffff",
-      stroke: "#aeb2ad",
-      "stroke-width": 1.2,
+      stroke: "#b7bab5",
+      "stroke-width": 1,
       "vector-effect": "non-scaling-stroke",
     }));
   }
