@@ -55,9 +55,6 @@
     svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
     if (!cfg.visible) return;
 
-    // Measurements derived directly from the 1249×1249 reference image.
-    // Reference radii: center hole 106 px, 10 rings ≈42.4 px each,
-    // numeric edge 530 px, angle edge 563 px, calendar edge 589 px.
     const cx = 900;
     const cy = 900;
     const innerRadius = 153;
@@ -74,7 +71,6 @@
     const root = svgEl("g");
     svg.appendChild(root);
 
-    // Alternating bands copied from the reference palette.
     for (let ring = 0; ring < cfg.levels; ring++) {
       const r0 = innerRadius + ring * ringWidth;
       const r1 = r0 + ringWidth;
@@ -92,7 +88,6 @@
       }));
     }
 
-    // Every separator falls between adjacent numbers.
     for (let d = 0; d < cfg.divisions; d++) {
       const angle = direction * (d * step + halfStep);
       const a = polar(cx, cy, innerRadius, angle);
@@ -110,7 +105,6 @@
       }));
     }
 
-    // Equal circular boundaries for all ten rings.
     for (let ring = 0; ring <= cfg.levels; ring++) {
       const edge = ring === 0 || ring === cfg.levels;
       root.appendChild(svgEl("circle", {
@@ -132,7 +126,8 @@
         for (let local = 1; local <= cfg.divisions; local++) {
           const index = ring * cfg.divisions + (local - 1);
           const value = cfg.startValue + index * cfg.increment;
-          const localAngle = direction * ((local % cfg.divisions) * step);
+          // Reference orientation: local 1 is at 270°, local 10 at 0°.
+          const localAngle = direction * ((((local - 1) * step) + 270) % 360);
           const pos = polar(cx, cy, textRadius, localAngle);
           const rotation = readableRotation(localAngle);
 
@@ -203,7 +198,6 @@
     }
 
     if (cfg.showCalendar) {
-      // Pale green guide as in the source application.
       root.appendChild(svgEl("circle", {
         cx,
         cy,
@@ -214,7 +208,6 @@
         "vector-effect": "non-scaling-stroke",
       }));
 
-      // Continuous green frame plus subtle alternating red/green marks.
       root.appendChild(svgEl("circle", {
         cx,
         cy,
