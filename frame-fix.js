@@ -36,32 +36,36 @@
 
   const originalDrawWheel = wheelApi.drawWheel;
 
-  wheelApi.drawWheel = function drawWheelWithTwoCircleFrame(svg, options) {
+  wheelApi.drawWheel = function drawWheelWithFinalTwoCircleFrame(svg, options) {
     originalDrawWheel(svg, options);
 
     const root = svg.querySelector("g") || svg;
     const cx = 900;
     const cy = 900;
-    const numberEdge = 763;
-    const redAngleRadius = 807;
-    const greenCalendarRadius = 852;
-    const angleLabelRadius = 785;
-    const dateLabelRadius = 874;
 
-    // Remove every old outer circle. The numbered wheel ends at radius 763.
+    // Exactly two outer circles:
+    // 1) red circle directly on the outer edge of the numbered wheel,
+    // 2) green calendar circle outside the angle scale.
+    const redAngleRadius = 763;
+    const greenCalendarRadius = 852;
+    const angleLabelRadius = 800;
+    const dateLabelRadius = 875;
+
+    // Remove the original outer wheel boundary and every older outer frame circle.
     svg.querySelectorAll("circle").forEach(circle => {
       const radius = Number(circle.getAttribute("r"));
-      if (Number.isFinite(radius) && radius > numberEdge) circle.remove();
+      if (Number.isFinite(radius) && radius >= redAngleRadius) circle.remove();
     });
 
-    // Remove all old protractor/calendar ticks, labels and marker.
+    // Remove every old outer tick, label and marker without touching the wheel grid.
     const oldOuterStrokes = new Set([
       "#dcc0bc", "#d9a9a5", "#d95650", "#aaa9a5",
       "#b8cfc2", "#b6cfc0", "#d94a43", "#3c9b60",
       "#38965d", "#86b19a", "#e2c7c3", "#dcb7b2",
       "#73a287", "#c6c9c6", "#d0dfd7", "#b7cec1",
       "#d0d2d0", "#aeb1ae", "#aeb0ae", "#ed8b8b",
-      "#ef5555", "#ee1717", "#07952e",
+      "#ef5555", "#ee1717", "#07952e", "#d99a95",
+      "#df2e29", "#d8615b", "#6fa88a",
     ]);
 
     svg.querySelectorAll("line").forEach(line => {
@@ -70,27 +74,45 @@
     svg.querySelectorAll(".degree-label, .calendar-label").forEach(node => node.remove());
     svg.querySelectorAll('path[fill="#d9211f"], path[fill="#df1717"]').forEach(node => node.remove());
 
-    // 1) The only red circle: angle frame.
+    // Red circle under the angle tick marks.
     root.appendChild(svgEl("circle", {
       cx,
       cy,
       r: redAngleRadius,
       fill: "none",
-      stroke: "#d99a95",
-      "stroke-width": 1.25,
+      stroke: "#dc8f89",
+      "stroke-width": 1.2,
       "vector-effect": "non-scaling-stroke",
     }));
 
-    // Angle ticks every 5 degrees. No extra circular guide is drawn.
-    for (let angle = 0; angle < 360; angle += 5) {
+    // Dense degree scale: minor ticks every 1°, stronger red ticks at 5° and 10°.
+    for (let angle = 0; angle < 360; angle += 1) {
       const cardinal = angle % 90 === 0;
-      const major = angle % 10 === 0;
-      const tickLength = cardinal ? 24 : (major ? 16 : 8);
-      const tickColor = cardinal ? "#df2e29" : (major ? "#d8615b" : "#aaa9a5");
-      const tickWidth = cardinal ? 2 : (major ? 1.25 : 0.7);
-      const t0 = polar(cx, cy, redAngleRadius - tickLength, angle);
-      const t1 = polar(cx, cy, redAngleRadius, angle);
+      const ten = angle % 10 === 0;
+      const five = angle % 5 === 0;
 
+      let tickLength = 5;
+      let tickColor = "#c4c5c2";
+      let tickWidth = 0.5;
+
+      if (five) {
+        tickLength = 10;
+        tickColor = "#e5a09b";
+        tickWidth = 0.8;
+      }
+      if (ten) {
+        tickLength = 17;
+        tickColor = "#d95e57";
+        tickWidth = 1.2;
+      }
+      if (cardinal) {
+        tickLength = 24;
+        tickColor = "#dc2b25";
+        tickWidth = 1.9;
+      }
+
+      const t0 = polar(cx, cy, redAngleRadius, angle);
+      const t1 = polar(cx, cy, redAngleRadius + tickLength, angle);
       root.appendChild(svgEl("line", {
         x1: t0.x,
         y1: t0.y,
@@ -100,22 +122,27 @@
         "stroke-width": tickWidth,
         "vector-effect": "non-scaling-stroke",
       }));
+    }
 
+    // Angle labels between the red and green circles.
+    for (let angle = 0; angle < 360; angle += 5) {
+      const cardinal = angle % 90 === 0;
+      const ten = angle % 10 === 0;
       const p = polar(cx, cy, angleLabelRadius, angle);
       root.appendChild(svgEl("text", {
         x: p.x,
         y: p.y,
-        fill: cardinal ? "#df2e29" : (major ? "#171717" : "#858582"),
+        fill: cardinal ? "#dc2b25" : (ten ? "#171717" : "#858582"),
         "font-family": "Arial, sans-serif",
-        "font-size": cardinal ? 13 : (major ? 10.8 : 9.8),
-        "font-weight": cardinal || major ? 700 : 400,
+        "font-size": cardinal ? 13 : (ten ? 10.8 : 9.8),
+        "font-weight": cardinal || ten ? 700 : 400,
         "text-anchor": "middle",
         "dominant-baseline": "middle",
         transform: `rotate(${readableRotation(angle)} ${p.x} ${p.y})`,
       }, `${angle}°`));
     }
 
-    // 2) The only green circle: calendar frame.
+    // The only green circle: calendar frame.
     root.appendChild(svgEl("circle", {
       cx,
       cy,
@@ -126,7 +153,6 @@
       "vector-effect": "non-scaling-stroke",
     }));
 
-    // Date ticks and labels. These are lines/text, not additional circles.
     for (const [angle, label] of DATE_MARKS) {
       const t0 = polar(cx, cy, greenCalendarRadius - 2, angle);
       const t1 = polar(cx, cy, greenCalendarRadius + 12, angle);
