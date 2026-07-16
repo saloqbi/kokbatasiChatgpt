@@ -25,26 +25,28 @@
     return normalized > 90 && normalized < 270 ? normalized + 180 : normalized;
   }
 
+  // Exact 15-degree calendar sequence visible in the reference application.
   const DATE_MARKS = [
-    [0, "21 JUN"], [30, "21 JUL"], [60, "21 AUG"], [90, "21 SEP"],
-    [120, "21 OCT"], [150, "21 NOV"], [180, "21 DEC"], [210, "20 JAN"],
-    [240, "19 FEB"], [270, "21 MAR"], [300, "21 APR"], [330, "21 MAY"],
+    [0, "21 JUN"], [15, "6 JUL"], [30, "22 JUL"], [45, "6 AUG"],
+    [60, "22 AUG"], [75, "6 SEP"], [90, "22 SEP"], [105, "7 OCT"],
+    [120, "22 OCT"], [135, "6 NOV"], [150, "21 NOV"], [165, "6 DEC"],
+    [180, "21 DEC"], [195, "5 JAN"], [210, "20 JAN"], [225, "4 FEB"],
+    [240, "19 FEB"], [255, "6 MAR"], [270, "21 MAR"], [285, "5 APR"],
+    [300, "21 APR"], [315, "6 MAY"], [330, "21 MAY"], [345, "6 JUN"],
   ];
 
   const originalDrawWheel = wheelApi.drawWheel;
 
-  wheelApi.drawWheel = function drawWheelWithExactReferenceFrame(svg, options) {
+  wheelApi.drawWheel = function drawWheelWithReferenceFrame(svg, options) {
     originalDrawWheel(svg, options);
 
-    // Remove the previous protractor/calendar implementation completely.
-    const removableStrokes = [
+    // Remove the previous angle/calendar frame completely.
+    const oldStrokes = [
       "#dcc0bc", "#d9a9a5", "#d95650", "#aaa9a5",
       "#b8cfc2", "#b6cfc0", "#d94a43", "#3c9b60",
-      "#38965d", "#86b19a", "#c5d8cd", "#b9cfc2",
-      "#d1dfd7", "#3f9762", "#8db49d",
+      "#38965d", "#86b19a",
     ];
-
-    removableStrokes.forEach(stroke => {
+    oldStrokes.forEach(stroke => {
       svg.querySelectorAll(`[stroke="${stroke}"]`).forEach(node => node.remove());
     });
     svg.querySelectorAll(".degree-label, .calendar-label").forEach(node => node.remove());
@@ -54,107 +56,112 @@
     const cx = 900;
     const cy = 900;
 
-    // Exact frame geometry based on the latest reference image.
+    // Reference proportions: numbered wheel, rose angle band, then pale-green calendar band.
     const numberEdge = 763;
-    const innerScaleRadius = 782;
-    const tickOuterRadius = 814;
-    const outerCalendarRadius = 852;
-    const dateLabelRadius = 875;
+    const angleInnerRadius = 779;
+    const angleOuterRadius = 813;
+    const angleLabelRadius = 791;
+    const calendarInnerRadius = 841;
+    const calendarOuterRadius = 846;
+    const dateLabelRadius = 866;
 
-    // Fine neutral baseline immediately outside the numbered wheel.
-    root.appendChild(svgEl("circle", {
-      cx, cy, r: innerScaleRadius,
-      fill: "none",
-      stroke: "#d5d7d5",
-      "stroke-width": 0.85,
-      "vector-effect": "non-scaling-stroke",
-    }));
-
-    // Red protractor frame.
-    root.appendChild(svgEl("circle", {
-      cx, cy, r: tickOuterRadius,
-      fill: "none",
-      stroke: "#ef8d8d",
-      "stroke-width": 1.15,
-      "vector-effect": "non-scaling-stroke",
-    }));
-
-    // One-degree scale with stronger 5° and 10° marks.
-    for (let angle = 0; angle < 360; angle += 1) {
-      const isCardinal = angle % 90 === 0;
-      const isTen = angle % 10 === 0;
-      const isFive = angle % 5 === 0;
-
-      let tickLength = 5;
-      let stroke = "#c8c9c7";
-      let strokeWidth = 0.55;
-
-      if (isFive) {
-        tickLength = 10;
-        stroke = "#e9a0a0";
-        strokeWidth = 0.85;
-      }
-      if (isTen) {
-        tickLength = 17;
-        stroke = "#ef5d5d";
-        strokeWidth = 1.3;
-      }
-      if (isCardinal) {
-        tickLength = 25;
-        stroke = "#ef2020";
-        strokeWidth = 2.15;
-      }
-
-      const p0 = polar(cx, cy, tickOuterRadius - tickLength, angle);
-      const p1 = polar(cx, cy, tickOuterRadius, angle);
+    // Subtle continuation from the number cells into the angle band every 10 degrees.
+    for (let angle = 0; angle < 360; angle += 10) {
+      const p0 = polar(cx, cy, numberEdge, angle);
+      const p1 = polar(cx, cy, angleInnerRadius, angle);
       root.appendChild(svgEl("line", {
         x1: p0.x, y1: p0.y,
         x2: p1.x, y2: p1.y,
-        stroke,
-        "stroke-width": strokeWidth,
+        stroke: "#c6c9c6",
+        "stroke-width": 0.75,
         "vector-effect": "non-scaling-stroke",
       }));
     }
 
-    // Angle labels: gray at 5°, black at 10°, red at the four axes.
-    for (let angle = 0; angle < 360; angle += 5) {
-      const cardinal = angle % 90 === 0;
-      const ten = angle % 10 === 0;
-      const labelRadius = cardinal ? 768 : 772;
-      const p = polar(cx, cy, labelRadius, angle);
+    // Two thin pale-rose circles, matching the original Gannzilla protractor frame.
+    root.appendChild(svgEl("circle", {
+      cx, cy, r: angleInnerRadius,
+      fill: "none",
+      stroke: "#e2c7c3",
+      "stroke-width": 0.9,
+      "vector-effect": "non-scaling-stroke",
+    }));
+    root.appendChild(svgEl("circle", {
+      cx, cy, r: angleOuterRadius,
+      fill: "none",
+      stroke: "#dcb7b2",
+      "stroke-width": 1.05,
+      "vector-effect": "non-scaling-stroke",
+    }));
 
+    // Reference scale: labels/ticks every 5 degrees, red major ticks every 10 degrees.
+    for (let angle = 0; angle < 360; angle += 5) {
+      const isCardinal = angle % 90 === 0;
+      const isMajor = angle % 10 === 0;
+      const tickLength = isCardinal ? 22 : (isMajor ? 15 : 8);
+      const tickColor = isCardinal ? "#df3c37" : (isMajor ? "#d96862" : "#b9b9b5");
+      const tickWidth = isCardinal ? 1.9 : (isMajor ? 1.25 : 0.65);
+
+      const t0 = polar(cx, cy, angleOuterRadius - tickLength, angle);
+      const t1 = polar(cx, cy, angleOuterRadius, angle);
+      root.appendChild(svgEl("line", {
+        x1: t0.x, y1: t0.y,
+        x2: t1.x, y2: t1.y,
+        stroke: tickColor,
+        "stroke-width": tickWidth,
+        "vector-effect": "non-scaling-stroke",
+      }));
+
+      const p = polar(cx, cy, angleLabelRadius, angle);
       root.appendChild(svgEl("text", {
         x: p.x,
         y: p.y,
-        class: "reference-angle-label",
-        fill: cardinal ? "#ef2020" : (ten ? "#171717" : "#8b8b88"),
+        fill: isMajor ? "#181818" : "#878783",
         "font-family": "Arial, sans-serif",
-        "font-size": cardinal ? 15 : (ten ? 11.5 : 10.5),
-        "font-weight": cardinal || ten ? 700 : 400,
+        "font-size": isMajor ? 10.8 : 9.8,
+        "font-weight": isMajor ? 700 : 400,
         "text-anchor": "middle",
         "dominant-baseline": "middle",
         transform: `rotate(${readableRotation(angle)} ${p.x} ${p.y})`,
       }, `${angle}°`));
     }
 
-    // Single clean green calendar arc.
+    // Small red center marker at 0°, as shown in the reference.
+    const zeroDot = polar(cx, cy, angleLabelRadius + 6, 0);
     root.appendChild(svgEl("circle", {
-      cx, cy, r: outerCalendarRadius,
+      cx: zeroDot.x,
+      cy: zeroDot.y,
+      r: 3.1,
+      fill: "#df3c37",
+      stroke: "#ffffff",
+      "stroke-width": 0.7,
+    }));
+
+    // Two close, continuous, pale-green calendar arcs — no red/green dashes.
+    root.appendChild(svgEl("circle", {
+      cx, cy, r: calendarInnerRadius,
       fill: "none",
-      stroke: "#19a344",
-      "stroke-width": 1.55,
+      stroke: "#d0dfd7",
+      "stroke-width": 0.85,
+      "vector-effect": "non-scaling-stroke",
+    }));
+    root.appendChild(svgEl("circle", {
+      cx, cy, r: calendarOuterRadius,
+      fill: "none",
+      stroke: "#b7cec1",
+      "stroke-width": 1.05,
       "vector-effect": "non-scaling-stroke",
     }));
 
-    // Monthly green ticks and labels outside the arc.
+    // Calendar ticks and all 24 date labels at 15-degree intervals.
     for (const [angle, label] of DATE_MARKS) {
-      const t0 = polar(cx, cy, outerCalendarRadius - 3, angle);
-      const t1 = polar(cx, cy, outerCalendarRadius + 16, angle);
+      const t0 = polar(cx, cy, calendarInnerRadius - 1, angle);
+      const t1 = polar(cx, cy, calendarOuterRadius + 11, angle);
       root.appendChild(svgEl("line", {
         x1: t0.x, y1: t0.y,
         x2: t1.x, y2: t1.y,
-        stroke: "#16983e",
-        "stroke-width": 1.65,
+        stroke: "#73a287",
+        "stroke-width": angle % 30 === 0 ? 1.35 : 0.95,
         "vector-effect": "non-scaling-stroke",
       }));
 
@@ -162,38 +169,24 @@
       root.appendChild(svgEl("text", {
         x: p.x,
         y: p.y,
-        class: "reference-date-label",
-        fill: "#15963d",
+        fill: "#60776a",
         "font-family": "Arial, sans-serif",
-        "font-size": 11.5,
-        "font-weight": 700,
+        "font-size": 10.2,
+        "font-weight": 500,
         "text-anchor": "middle",
         "dominant-baseline": "middle",
         transform: `rotate(${readableRotation(angle)} ${p.x} ${p.y})`,
       }, label));
     }
 
-    // Red directional triangle at the selected angle.
+    // Smaller red marker positioned inside the calendar band at the selected angle.
     const markerAngle = Number(options && options.markerAngle) || 20;
-    const tip = polar(cx, cy, outerCalendarRadius - 7, markerAngle);
-    const left = polar(cx, cy, outerCalendarRadius - 25, markerAngle - 1.8);
-    const right = polar(cx, cy, outerCalendarRadius - 25, markerAngle + 1.8);
+    const tip = polar(cx, cy, calendarInnerRadius + 1, markerAngle);
+    const left = polar(cx, cy, calendarInnerRadius - 15, markerAngle - 1.35);
+    const right = polar(cx, cy, calendarInnerRadius - 15, markerAngle + 1.35);
     root.appendChild(svgEl("path", {
       d: `M ${tip.x} ${tip.y} L ${left.x} ${left.y} L ${right.x} ${right.y} Z`,
-      fill: "#e31515",
+      fill: "#d9211f",
     }));
-
-    // A subtle radial continuation from the outer number ring to the scale.
-    for (let angle = 0; angle < 360; angle += 10) {
-      const p0 = polar(cx, cy, numberEdge, angle);
-      const p1 = polar(cx, cy, innerScaleRadius, angle);
-      root.appendChild(svgEl("line", {
-        x1: p0.x, y1: p0.y,
-        x2: p1.x, y2: p1.y,
-        stroke: "#c2c5c2",
-        "stroke-width": 0.75,
-        "vector-effect": "non-scaling-stroke",
-      }));
-    }
   };
 })();
