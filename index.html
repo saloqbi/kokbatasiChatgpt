@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TASI Gannzilla — Baseline V4</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="top-toolbar">
+      <div class="brand">Gannzilla Pro</div>
+      <div class="toolbar-group">
+        <button id="newBtn" title="New">＋</button>
+        <button id="fitBtn" title="Fit to screen">Fit</button>
+        <button id="zoomOutBtn" title="Zoom out">−</button>
+        <span id="zoomLabel">100%</span>
+        <button id="zoomInBtn" title="Zoom in">＋</button>
+        <button id="exportSvgBtn" title="Export SVG">SVG</button>
+        <button id="exportPngBtn" title="Export PNG">PNG</button>
+      </div>
+      <div class="toolbar-spacer"></div>
+      <div class="toolbar-group">
+        <span class="language-label">English</span>
+        <span class="info-dot">i</span>
+      </div>
+    </header>
+
+    <main class="main-layout">
+      <aside class="sidebar">
+        <div class="preset-header">
+          <span>Default</span>
+          <div class="preset-actions">＋ − ✎ 💾</div>
+        </div>
+
+        <section class="panel-section open">
+          <h3>− Layout</h3>
+          <div class="panel-body">
+            <label class="row"><span>Visible</span><input id="visibleInput" type="checkbox" checked /></label>
+            <label class="row"><span>Clockwise</span><input id="clockwiseInput" type="checkbox" checked /></label>
+            <label class="row"><span>Size</span><input id="levelsInput" type="number" min="1" max="20" value="10" /></label>
+            <div class="row wheel-size-row">
+              <span>Wheel size</span>
+              <div class="wheel-size-control">
+                <input id="wheelSizeRange" type="range" min="35" max="200" step="1" value="100" aria-label="Wheel size percent" />
+                <input id="wheelSizeNumber" type="number" min="35" max="200" step="1" value="100" aria-label="Wheel size percent" />
+                <span>%</span>
+              </div>
+            </div>
+            <label class="row"><span>View</span><select id="viewInput"><option>Circle of 36</option></select></label>
+            <label class="row"><span>Data type</span><select><option>Price</option></select></label>
+          </div>
+        </section>
+
+        <section class="panel-section open">
+          <h3>− Price</h3>
+          <div class="panel-body">
+            <label class="row"><span>Value</span><input id="startValueInput" type="number" value="1" /></label>
+            <label class="row"><span>Find</span><input id="findInput" type="number" value="1" /></label>
+            <label class="row"><span>Increment</span><input id="incrementInput" type="number" step="1" value="1" /></label>
+          </div>
+        </section>
+
+        <section class="panel-section open">
+          <h3>− Highlight</h3>
+          <div class="panel-body">
+            <label class="row"><span>Visible</span><input id="highlightVisibleInput" type="checkbox" checked /></label>
+            <label class="row"><span>Fill</span><select id="fillInput"><option value="levels">Levels</option><option value="none">None</option></select></label>
+            <label class="row"><span>Show marks</span><input id="showMarksInput" type="checkbox" checked /></label>
+            <label class="row"><span>Show numbers</span><input id="showNumbersInput" type="checkbox" checked /></label>
+          </div>
+        </section>
+
+        <section class="panel-section open">
+          <h3>− Protractor</h3>
+          <div class="panel-body">
+            <label class="row"><span>Visible</span><input id="protractorVisibleInput" type="checkbox" checked /></label>
+            <label class="row"><span>Clockwise</span><input id="protractorClockwiseInput" type="checkbox" checked /></label>
+            <label class="row"><span>Angle</span><input id="angleInput" type="number" min="0" max="359" value="20" /></label>
+          </div>
+        </section>
+
+        <section class="panel-section">
+          <h3>＋ Counter</h3>
+        </section>
+        <section class="panel-section">
+          <h3>＋ Secondary scale</h3>
+        </section>
+        <section class="panel-section">
+          <h3>＋ Marker</h3>
+        </section>
+
+        <section class="panel-section open">
+          <h3>− Chronometer</h3>
+          <div class="panel-body">
+            <label class="row"><span>Visible</span><input id="calendarVisibleInput" type="checkbox" checked /></label>
+            <label class="row"><span>Clockwise</span><input id="calendarClockwiseInput" type="checkbox" checked /></label>
+            <label class="row"><span>Angle</span><input type="number" value="0" /></label>
+            <label class="row"><span>Range</span><select><option>Annual</option></select></label>
+          </div>
+        </section>
+
+        <section class="panel-section">
+          <h3>＋ Secondary scale</h3>
+        </section>
+        <section class="panel-section">
+          <h3>＋ Marker</h3>
+        </section>
+        <section class="panel-section">
+          <h3>＋ Cosmogram</h3>
+        </section>
+      </aside>
+
+      <section class="workspace">
+        <div class="stage" id="stage">
+          <svg id="wheelSvg" xmlns="http://www.w3.org/2000/svg" aria-label="TASI Gannzilla wheel"></svg>
+        </div>
+      </section>
+    </main>
+
+    <footer class="status-bar">
+      <span id="statusText">Ready</span>
+      <span>Baseline V4 · SVG Vector · 10 × 36</span>
+    </footer>
+  </div>
+
+  <script src="wheel.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
