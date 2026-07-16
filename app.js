@@ -142,7 +142,7 @@
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "tasi-gannzilla-baseline-v4.svg";
+    a.download = "tasi-gannzilla-reference-v5.svg";
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     statusText.textContent = "SVG exported";
@@ -168,7 +168,7 @@
 
       const a = document.createElement("a");
       a.href = canvas.toDataURL("image/png");
-      a.download = "tasi-gannzilla-baseline-v4-4096.png";
+      a.download = "tasi-gannzilla-reference-v5-4096.png";
       a.click();
       statusText.textContent = "PNG 4096 × 4096 exported";
     };
@@ -178,7 +178,6 @@
 
   window.addEventListener("resize", applyZoom);
 
-  // Initialize inputs from URL/state.
   document.getElementById("levelsInput").value = state.levels;
   document.getElementById("startValueInput").value = state.startValue;
   document.getElementById("incrementInput").value = state.increment;
@@ -188,7 +187,6 @@
   document.getElementById("wheelSizeRange").value = Math.round(state.wheelSize);
   document.getElementById("wheelSizeNumber").value = Math.round(state.wheelSize);
 
-  // Drag the workspace to pan when the wheel is larger than the screen.
   stage.classList.add("drag-scroll");
   let dragging = false;
   let startX = 0;
@@ -225,5 +223,5 @@
   stage.addEventListener("pointerup", stopDragging);
   stage.addEventListener("pointercancel", stopDragging);
 
-  render("Baseline V4 loaded");
+  render("Reference Baseline V5 loaded");
 })();
