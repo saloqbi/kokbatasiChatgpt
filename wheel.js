@@ -126,8 +126,7 @@
         for (let local = 1; local <= cfg.divisions; local++) {
           const index = ring * cfg.divisions + (local - 1);
           const value = cfg.startValue + index * cfg.increment;
-          // Reference orientation: local 1 is at 270°, local 10 at 0°.
-          const localAngle = direction * ((((local - 1) * step) + 270) % 360);
+          const localAngle = direction * ((local % cfg.divisions) * step);
           const pos = polar(cx, cy, textRadius, localAngle);
           const rotation = readableRotation(localAngle);
 
