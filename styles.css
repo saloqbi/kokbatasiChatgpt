@@ -251,35 +251,33 @@ select { font: inherit; }
 }
 
 .wheel-number {
-  font-family: Arial, Tahoma, sans-serif;
+  font-family: "Arial Narrow", Arial, Tahoma, sans-serif;
   font-weight: 700;
-  fill: #171717;
+  font-stretch: condensed;
+  fill: #111;
   text-anchor: middle;
   dominant-baseline: middle;
   pointer-events: none;
-  paint-order: stroke;
-  stroke: rgba(255, 255, 255, 0.18);
-  stroke-width: 0.25px;
 }
 
 .degree-label {
   font-family: Arial, sans-serif;
-  fill: #74736f;
-  font-size: 12px;
+  fill: #77746f;
+  font-size: 10.5px;
   text-anchor: middle;
   dominant-baseline: middle;
 }
 
 .degree-label.major {
-  fill: #1d1d1d;
+  fill: #171717;
   font-weight: 700;
 }
 
 .calendar-label {
   font-family: Arial, sans-serif;
-  fill: #5a6f63;
-  font-size: 12px;
-  font-weight: 600;
+  fill: #53685d;
+  font-size: 11px;
+  font-weight: 500;
   text-anchor: middle;
   dominant-baseline: middle;
 }
